@@ -15,20 +15,37 @@ public class TransferRecord {
     private Long toAccountId;
 
     @Column(nullable = false)
-    private String currency;
+    private String transCurrency;
 
     @Column(nullable = false)
     private Double amount;
 
+    @Column(nullable = false)
+    private String date;
+
+    @Column(nullable = false)
+    private Double conversionRate;
+
+    @Column(nullable = false)
+    private Double crdhldBillAmt;
+
+    @Column(nullable = false)
+    private Double bankFee;
+
     public TransferRecord() {
     }
 
-    public TransferRecord(Long id, Long fromAccountId, Long toAccountId, String currency, Double amount) {
+    public TransferRecord(Long id, Long fromAccountId, Long toAccountId, String transCurrency, Double amount, String date,
+                          Double conversionRate, Double crdhldBillAmt, Double bankFee) {
         this.id = id;
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
-        this.currency = currency;
+        this.transCurrency = transCurrency;
         this.amount = amount;
+        this.date = date;
+        this.conversionRate = conversionRate;
+        this.crdhldBillAmt = crdhldBillAmt;
+        this.bankFee = bankFee;
     }
 
     public Long getId() {
@@ -43,11 +60,27 @@ public class TransferRecord {
         return toAccountId;
     }
 
-    public String getCurrency() {
-        return currency;
+    public String getTransCurrency() {
+        return transCurrency;
     }
 
     public double getAmount() {
         return amount;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public Double getConversionRate() {
+        return conversionRate;
+    }
+
+    public Double getCrdhldBillAmt() {
+        return crdhldBillAmt;
+    }
+
+    public Double getBankFee() {
+        return bankFee;
     }
 }

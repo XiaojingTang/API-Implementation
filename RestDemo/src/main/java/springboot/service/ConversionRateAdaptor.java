@@ -10,6 +10,7 @@ import com.mastercard.api.core.model.RequestMap;
 import com.mastercard.api.core.model.map.SmartMap;
 import com.mastercard.api.core.security.oauth.OAuthAuthentication;
 import com.mastercard.api.currencyconversion.ConversionRate;
+import com.mastercard.api.currencyconversion.RateIssued;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,6 +23,7 @@ public class ConversionRateAdaptor {
     private String keyAlias = "keyalias";   // For production: change this to the key alias you chose when you created your production key
     private String keyPassword = "keystorepassword";   // For production: change this to the key alias you chose when you created your production key
     private InputStream is; // e.g. /Users/yourname/project/sandbox.p12 | C:\Users\yourname\project\sandbox.p12
+    private static final String BANKFEE = "5";
 
     public ConversionRateAdaptor() {
         try {
@@ -35,7 +37,37 @@ public class ConversionRateAdaptor {
         ApiConfig.setEnvironment(Environment.parse("sandbox_mtf"));
     }
 
-    public ConversionRate getConversionRate(RequestMap map) {
+    private boolean isRateIssued(RequestMap map) {
+        try {
+            RateIssued response = RateIssued.query(map);
+            out(response, "name"); //-->settlement-conversion-rate-issued
+            out(response, "description"); //-->Is settlement conversion rate issued
+            out(response, "date"); //-->2017-11-03 04:07:18
+            out(response, "data.rateIssued"); //-->Yes
+            return (response.get("data.rateIssued") != null && response.get("data.rateIssued").equals("Yes"));
+        } catch (ApiException e) {
+            err("HttpStatus: " + e.getHttpStatus());
+            err("Message: " + e.getMessage());
+            err("ReasonCode: " + e.getReasonCode());
+            err("Source: " + e.getSource());
+        }
+        return false;
+    }
+
+    public ConversionRate getConversionRate(String date, String transCurr, String crdhldBillCurr, String amount) {
+        RequestMap dateMap = new RequestMap();
+        dateMap.set("date", date);
+        if (!isRateIssued(dateMap)) {
+            return null;
+        }
+
+        RequestMap map = new RequestMap();
+        map.set("fxDate", date);
+        map.set("transCurr", transCurr);
+        map.set("crdhldBillCurr", crdhldBillCurr);
+        map.set("bankFee", BANKFEE);
+        map.set("transAmt", amount);
+
         try {
             return ConversionRate.query(map);
         } catch (ApiException e) {
@@ -47,16 +79,15 @@ public class ConversionRateAdaptor {
         return null;
     }
 
-    public static void main(String[] args) throws Exception {
-        ConversionRateAdaptor conversionRateAdaptor = new ConversionRateAdaptor();
-        RequestMap map = new RequestMap();
-        map.set("fxDate", "2019-09-30");
-        map.set("transCurr", "ALL");
-        map.set("crdhldBillCurr", "DZD");
-        map.set("bankFee", "5");
-        map.set("transAmt", "23");
+    public static void main(String[] args) {
 
-        ConversionRate response = conversionRateAdaptor.getConversionRate(map);
+        ConversionRateAdaptor conversionRateAdaptor = new ConversionRateAdaptor();
+
+        RequestMap map0 = new RequestMap();
+        map0.set("date", "1019-08-08");
+        System.out.println("isRateIssued return: " + conversionRateAdaptor.isRateIssued(map0));
+
+        ConversionRate response = conversionRateAdaptor.getConversionRate("2019-09-30", "ALL", "CDC", "23");
         out(response, "name"); //-->settlement-conversion-rate
         out(response, "description"); //-->Settlement conversion rate and billing amount
         out(response, "date"); //-->2017-11-03 03:59:50
