@@ -102,14 +102,11 @@ public class Controller {
 
         Account account = accountRepository.findById(accountId);
         ConversionRate response = conversionRateAdaptor.getConversionRate(date, transCurrency, account.getCurrency(), Double.toString(amount));
-        if (response == null || response.get("data.conversionRate") == null) {
-            return new ResponseEntity<>("Currency conversion not available", HttpStatus.BAD_REQUEST);
-        }
 
         double conversionRate = (double) response.get("data.conversionRate");
         double crdhldBillAmt = (double) response.get("data.crdhldBillAmt");
         long bankFee = (long) response.get("data.bankFee");
-        account.setBalance(account.getBalance() + crdhldBillAmt - bankFee);
+        account.setBalance(account.getBalance() + crdhldBillAmt);
         accountRepository.saveAndFlush(account);
         FundRecord fundRecord = fundRecordRepository.saveAndFlush(
                 new FundRecord(null, accountId, transCurrency, amount, date, conversionRate, crdhldBillAmt, bankFee));
@@ -151,14 +148,11 @@ public class Controller {
         fromAccount.setBalance(fromAccount.getBalance() - amount);
         Account toAccount = accountRepository.findById(toAccountId);
         ConversionRate response = conversionRateAdaptor.getConversionRate(date, transCurrency, toAccount.getCurrency(), Double.toString(amount));
-        if (response == null || response.get("data.conversionRate") == null) {
-            return new ResponseEntity<>("Currency conversion not available", HttpStatus.BAD_REQUEST);
-        }
 
         double conversionRate = (double) response.get("data.conversionRate");
         double crdhldBillAmt = (double) response.get("data.crdhldBillAmt");
         double bankFee = (double) response.get("data.bankFee");
-        toAccount.setBalance(toAccount.getBalance() + crdhldBillAmt - bankFee);
+        toAccount.setBalance(toAccount.getBalance() + crdhldBillAmt);
         accountRepository.save(fromAccount);
         accountRepository.save(toAccount);
         accountRepository.flush();
