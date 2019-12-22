@@ -151,7 +151,7 @@ public class Controller {
 
         double conversionRate = (double) response.get("data.conversionRate");
         double crdhldBillAmt = (double) response.get("data.crdhldBillAmt");
-        double bankFee = (double) response.get("data.bankFee");
+        long bankFee = (long) response.get("data.bankFee");
         toAccount.setBalance(toAccount.getBalance() + crdhldBillAmt);
         accountRepository.save(fromAccount);
         accountRepository.save(toAccount);

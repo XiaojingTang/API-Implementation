@@ -30,13 +30,13 @@ public class TransferRecord {
     private Double crdhldBillAmt;
 
     @Column(nullable = false)
-    private Double bankFee;
+    private Long bankFee;
 
     public TransferRecord() {
     }
 
     public TransferRecord(Long id, Long fromAccountId, Long toAccountId, String transCurrency, Double amount, String date,
-                          Double conversionRate, Double crdhldBillAmt, Double bankFee) {
+                          Double conversionRate, Double crdhldBillAmt, Long bankFee) {
         this.id = id;
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
@@ -80,7 +80,7 @@ public class TransferRecord {
         return crdhldBillAmt;
     }
 
-    public Double getBankFee() {
+    public Long getBankFee() {
         return bankFee;
     }
 }

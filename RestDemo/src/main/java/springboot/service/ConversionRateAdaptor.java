@@ -12,6 +12,8 @@ import com.mastercard.api.core.security.oauth.OAuthAuthentication;
 import com.mastercard.api.currencyconversion.ConversionRate;
 import com.mastercard.api.currencyconversion.Currencies;
 import com.mastercard.api.currencyconversion.RateIssued;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,6 +31,7 @@ public class ConversionRateAdaptor {
     private InputStream is; // e.g. /Users/yourname/project/sandbox.p12 | C:\Users\yourname\project\sandbox.p12
     private static final String BANKFEE = "5";
     private Set<String> allCurrencies = new HashSet<>();
+    private static Logger logger = LogManager.getLogger(ConversionRateAdaptor.class);
 
     public ConversionRateAdaptor() {
         try {
@@ -49,25 +52,12 @@ public class ConversionRateAdaptor {
             RequestMap map = new RequestMap();
 
             Currencies response = Currencies.query(map);
-            out(response, "name"); //-->settlement-currency
-            out(response, "description"); //-->A list of settlement active currencies
-            out(response, "date"); //-->11-2017-03 03:54:47
-            out(response, "data.currencies[0].alphaCd"); //-->AFN
-            out(response, "data.currencies[0].currNam"); //-->AFGHANISTAN AFGHANI
-            out(response, "data.currencies[1].alphaCd"); //-->ALL
-            out(response, "data.currencies[1].currNam"); //-->ALBANIAN LEK
-            // This sample shows looping through data.currencies
-            System.out.println("This sample shows looping through data.currencies");
+            logger.info("getAllCurrencies response: " + response.toString());
             for (Map<String, Object> item : (List<Map<String, Object>>) response.get("data.currencies")) {
                 currencies.add((String) item.get("alphaCd"));
-                out(item, "alphaCd");
-                out(item, "currNam");
             }
         } catch (ApiException e) {
-            err("HttpStatus: " + e.getHttpStatus());
-            err("Message: " + e.getMessage());
-            err("ReasonCode: " + e.getReasonCode());
-            err("Source: " + e.getSource());
+            logger.error("getAllCurrencies: ", e);
         }
         return currencies;
     }
@@ -76,19 +66,16 @@ public class ConversionRateAdaptor {
         return allCurrencies.contains(currency);
     }
 
-    public boolean isRateIssued(RequestMap map) {
+    public boolean isRateIssued(String date) {
+        RequestMap dateMap = new RequestMap();
+        dateMap.set("date", date);
+
         try {
-            RateIssued response = RateIssued.query(map);
-            out(response, "name"); //-->settlement-conversion-rate-issued
-            out(response, "description"); //-->Is settlement conversion rate issued
-            out(response, "date"); //-->2017-11-03 04:07:18
-            out(response, "data.rateIssued"); //-->Yes
+            RateIssued response = RateIssued.query(dateMap);
+            logger.debug("RateIssued response: " + response.toString());
             return (response.get("data.rateIssued") != null && response.get("data.rateIssued").equals("Yes"));
         } catch (ApiException e) {
-            err("HttpStatus: " + e.getHttpStatus());
-            err("Message: " + e.getMessage());
-            err("ReasonCode: " + e.getReasonCode());
-            err("Source: " + e.getSource());
+            logger.error("isRateIssued: ", e);
         }
         return false;
     }
@@ -105,10 +92,7 @@ public class ConversionRateAdaptor {
         try {
             return ConversionRate.query(map);
         } catch (ApiException e) {
-            err("HttpStatus: " + e.getHttpStatus());
-            err("Message: " + e.getMessage());
-            err("ReasonCode: " + e.getReasonCode());
-            err("Source: " + e.getSource());
+            logger.error("getConversionRate: ", e);
         }
         return null;
     }
@@ -117,16 +101,14 @@ public class ConversionRateAdaptor {
 
         ConversionRateAdaptor conversionRateAdaptor = new ConversionRateAdaptor();
 
-        RequestMap map0 = new RequestMap();
-        map0.set("date", "1019-08-08");
-        System.out.println("isRateIssued return: " + conversionRateAdaptor.isRateIssued(map0));
+        System.out.println("isRateIssued return: " + conversionRateAdaptor.isRateIssued("1019-08-08"));
 
         System.out.println("The currencies set:");
         for (String s : conversionRateAdaptor.getAllCurrencies()) {
             System.out.println(s);
         }
 
-        ConversionRate response = conversionRateAdaptor.getConversionRate("2019-09-30", "ALL", "CDC", "23");
+        ConversionRate response = conversionRateAdaptor.getConversionRate("2019-09-30", "ALL", "DZD", "23");
         out(response, "name"); //-->settlement-conversion-rate
         out(response, "description"); //-->Settlement conversion rate and billing amount
         out(response, "date"); //-->2017-11-03 03:59:50

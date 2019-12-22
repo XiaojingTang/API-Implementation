@@ -1,6 +1,5 @@
 package springboot.service;
 
-import com.mastercard.api.core.model.RequestMap;
 import springboot.model.AccountRepository;
 
 @org.springframework.stereotype.Component
@@ -22,8 +21,6 @@ public class InputValidator {
     }
 
     public boolean isRateIssuedDate(String date, ConversionRateAdaptor conversionRateAdaptor) {
-        RequestMap dateMap = new RequestMap();
-        dateMap.set("date", date);
-        return conversionRateAdaptor.isRateIssued(dateMap);
+        return conversionRateAdaptor.isRateIssued(date);
     }
 }
