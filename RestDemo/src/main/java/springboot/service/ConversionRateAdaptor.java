@@ -10,12 +10,16 @@ import com.mastercard.api.core.model.RequestMap;
 import com.mastercard.api.core.model.map.SmartMap;
 import com.mastercard.api.core.security.oauth.OAuthAuthentication;
 import com.mastercard.api.currencyconversion.ConversionRate;
+import com.mastercard.api.currencyconversion.Currencies;
 import com.mastercard.api.currencyconversion.RateIssued;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @org.springframework.stereotype.Component
 public class ConversionRateAdaptor {
@@ -24,6 +28,7 @@ public class ConversionRateAdaptor {
     private String keyPassword = "keystorepassword";   // For production: change this to the key alias you chose when you created your production key
     private InputStream is; // e.g. /Users/yourname/project/sandbox.p12 | C:\Users\yourname\project\sandbox.p12
     private static final String BANKFEE = "5";
+    private Set<String> allCurrencies = new HashSet<>();
 
     public ConversionRateAdaptor() {
         try {
@@ -35,9 +40,43 @@ public class ConversionRateAdaptor {
         ApiConfig.setDebug(true);   // Enable http wire logging
         // This is needed to change the environment to run the sample code. For production: use ApiConfig.setSandbox(false);
         ApiConfig.setEnvironment(Environment.parse("sandbox_mtf"));
+        allCurrencies = getAllCurrencies();
     }
 
-    private boolean isRateIssued(RequestMap map) {
+    private Set<String> getAllCurrencies() {
+        Set<String> currencies = new HashSet<>();
+        try {
+            RequestMap map = new RequestMap();
+
+            Currencies response = Currencies.query(map);
+            out(response, "name"); //-->settlement-currency
+            out(response, "description"); //-->A list of settlement active currencies
+            out(response, "date"); //-->11-2017-03 03:54:47
+            out(response, "data.currencies[0].alphaCd"); //-->AFN
+            out(response, "data.currencies[0].currNam"); //-->AFGHANISTAN AFGHANI
+            out(response, "data.currencies[1].alphaCd"); //-->ALL
+            out(response, "data.currencies[1].currNam"); //-->ALBANIAN LEK
+            // This sample shows looping through data.currencies
+            System.out.println("This sample shows looping through data.currencies");
+            for (Map<String, Object> item : (List<Map<String, Object>>) response.get("data.currencies")) {
+                currencies.add((String) item.get("alphaCd"));
+                out(item, "alphaCd");
+                out(item, "currNam");
+            }
+        } catch (ApiException e) {
+            err("HttpStatus: " + e.getHttpStatus());
+            err("Message: " + e.getMessage());
+            err("ReasonCode: " + e.getReasonCode());
+            err("Source: " + e.getSource());
+        }
+        return currencies;
+    }
+
+    public boolean isValidCurrency(String currency) {
+        return allCurrencies.contains(currency);
+    }
+
+    public boolean isRateIssued(RequestMap map) {
         try {
             RateIssued response = RateIssued.query(map);
             out(response, "name"); //-->settlement-conversion-rate-issued
@@ -55,11 +94,6 @@ public class ConversionRateAdaptor {
     }
 
     public ConversionRate getConversionRate(String date, String transCurr, String crdhldBillCurr, String amount) {
-        RequestMap dateMap = new RequestMap();
-        dateMap.set("date", date);
-        if (!isRateIssued(dateMap)) {
-            return null;
-        }
 
         RequestMap map = new RequestMap();
         map.set("fxDate", date);
@@ -86,6 +120,11 @@ public class ConversionRateAdaptor {
         RequestMap map0 = new RequestMap();
         map0.set("date", "1019-08-08");
         System.out.println("isRateIssued return: " + conversionRateAdaptor.isRateIssued(map0));
+
+        System.out.println("The currencies set:");
+        for (String s : conversionRateAdaptor.getAllCurrencies()) {
+            System.out.println(s);
+        }
 
         ConversionRate response = conversionRateAdaptor.getConversionRate("2019-09-30", "ALL", "CDC", "23");
         out(response, "name"); //-->settlement-conversion-rate

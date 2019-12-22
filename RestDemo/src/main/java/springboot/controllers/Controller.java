@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springboot.model.*;
 import springboot.service.ConversionRateAdaptor;
+import springboot.service.InputValidator;
 
 import java.util.List;
 
@@ -34,6 +35,9 @@ public class Controller {
 
     @Autowired
     private ConversionRateAdaptor conversionRateAdaptor;
+
+    @Autowired
+    private InputValidator inputValidator;
 
     @ApiOperation(value = "Get all accounts")
     @RequestMapping(value = "/getAllAccounts", method = RequestMethod.GET)
@@ -61,11 +65,13 @@ public class Controller {
             @RequestParam String user,
             @RequestParam String currency) {
 
-        if (user == null || user.length() == 0 || currency == null || currency.length() == 0) {
-            return new ResponseEntity<>("User/Currency cannot be empty", HttpStatus.BAD_REQUEST);
+        if (!inputValidator.isUserValid(user)) {
+            return new ResponseEntity<>("User not valid", HttpStatus.BAD_REQUEST);
+        }
+        if (!inputValidator.isCurrencyValid(currency, conversionRateAdaptor)) {
+            return new ResponseEntity<>("Currency not valid", HttpStatus.BAD_REQUEST);
         }
 
-        // TODO: check duplicates?
         Account account = accountRepository.saveAndFlush(new Account(null, user, currency));
         Gson gson = new GsonBuilder().create();
         return new ResponseEntity<>(gson.toJson(account, account.getClass()), HttpStatus.OK);
@@ -81,8 +87,17 @@ public class Controller {
             @RequestParam double amount,
             @RequestParam String date) {
 
-        if (accountId <= 0 || transCurrency == null || transCurrency.length() == 0) {
-            return new ResponseEntity<>("AccountId must be positive / Currency cannot be empty", HttpStatus.BAD_REQUEST);
+        if (!inputValidator.isAccountIdValid(accountId, accountRepository)) {
+            return new ResponseEntity<>("AccountId not valid", HttpStatus.BAD_REQUEST);
+        }
+        if (!inputValidator.isCurrencyValid(transCurrency, conversionRateAdaptor)) {
+            return new ResponseEntity<>("Currency not valid", HttpStatus.BAD_REQUEST);
+        }
+        if (!inputValidator.isAmountValid(amount)) {
+            return new ResponseEntity<>("Amount not valid", HttpStatus.BAD_REQUEST);
+        }
+        if (!inputValidator.isRateIssuedDate(date, conversionRateAdaptor)) {
+            return new ResponseEntity<>("Currency conversion rate not available for the date", HttpStatus.BAD_REQUEST);
         }
 
         Account account = accountRepository.findById(accountId);
@@ -90,11 +105,12 @@ public class Controller {
         if (response == null || response.get("data.conversionRate") == null) {
             return new ResponseEntity<>("Currency conversion not available", HttpStatus.BAD_REQUEST);
         }
+
         double conversionRate = (double) response.get("data.conversionRate");
         double crdhldBillAmt = (double) response.get("data.crdhldBillAmt");
         long bankFee = (long) response.get("data.bankFee");
         account.setBalance(account.getBalance() + crdhldBillAmt - bankFee);
-        accountRepository.saveAndFlush(account);      //todo synchonize?
+        accountRepository.saveAndFlush(account);
         FundRecord fundRecord = fundRecordRepository.saveAndFlush(
                 new FundRecord(null, accountId, transCurrency, amount, date, conversionRate, crdhldBillAmt, bankFee));
         return new ResponseEntity<>(gson.toJson(fundRecord, fundRecord.getClass()), HttpStatus.OK);
@@ -107,15 +123,25 @@ public class Controller {
     public ResponseEntity<?> transferFund(
             @RequestParam long fromAccountId,
             @RequestParam long toAccountId,
-            @RequestParam String currency,
+            @RequestParam String transCurrency,
             @RequestParam double amount,
             @RequestParam String date) {
 
-        if (fromAccountId <= 0 || toAccountId <= 0) {
-            return new ResponseEntity<>("AccountId cannot be negative", HttpStatus.BAD_REQUEST);
+
+        if (!inputValidator.isAccountIdValid(fromAccountId, accountRepository)) {
+            return new ResponseEntity<>("fromAccountId not valid", HttpStatus.BAD_REQUEST);
         }
-        if (currency == null || currency.length() == 0) {
-            return new ResponseEntity<>("Currency cannot be empty", HttpStatus.BAD_REQUEST);
+        if (!inputValidator.isAccountIdValid(toAccountId, accountRepository)) {
+            return new ResponseEntity<>("toAccountId not valid", HttpStatus.BAD_REQUEST);
+        }
+        if (!inputValidator.isCurrencyValid(transCurrency, conversionRateAdaptor)) {
+            return new ResponseEntity<>("Currency not valid", HttpStatus.BAD_REQUEST);
+        }
+        if (!inputValidator.isAmountValid(amount)) {
+            return new ResponseEntity<>("Amount not valid", HttpStatus.BAD_REQUEST);
+        }
+        if (!inputValidator.isRateIssuedDate(date, conversionRateAdaptor)) {
+            return new ResponseEntity<>("Currency conversion rate not available for the date", HttpStatus.BAD_REQUEST);
         }
 
         Account fromAccount = accountRepository.findById(fromAccountId);
@@ -124,19 +150,21 @@ public class Controller {
         }
         fromAccount.setBalance(fromAccount.getBalance() - amount);
         Account toAccount = accountRepository.findById(toAccountId);
-        ConversionRate response = conversionRateAdaptor.getConversionRate(date, currency, toAccount.getCurrency(), Double.toString(amount));
-        if (response == null) {
+        ConversionRate response = conversionRateAdaptor.getConversionRate(date, transCurrency, toAccount.getCurrency(), Double.toString(amount));
+        if (response == null || response.get("data.conversionRate") == null) {
             return new ResponseEntity<>("Currency conversion not available", HttpStatus.BAD_REQUEST);
         }
+
         double conversionRate = (double) response.get("data.conversionRate");
         double crdhldBillAmt = (double) response.get("data.crdhldBillAmt");
         double bankFee = (double) response.get("data.bankFee");
         toAccount.setBalance(toAccount.getBalance() + crdhldBillAmt - bankFee);
-        accountRepository.saveAndFlush(fromAccount);
-        accountRepository.saveAndFlush(toAccount);
+        accountRepository.save(fromAccount);
+        accountRepository.save(toAccount);
+        accountRepository.flush();
 
         TransferRecord transferRecord = transferRecordRepository.saveAndFlush(
-                new TransferRecord(null, fromAccountId, toAccountId, currency, amount, date, conversionRate, crdhldBillAmt, bankFee));
+                new TransferRecord(null, fromAccountId, toAccountId, transCurrency, amount, date, conversionRate, crdhldBillAmt, bankFee));
         return new ResponseEntity<>(gson.toJson(transferRecord, transferRecord.getClass()), HttpStatus.OK);
     }
 }
