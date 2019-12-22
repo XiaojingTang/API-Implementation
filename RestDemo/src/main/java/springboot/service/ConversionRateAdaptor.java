@@ -3,6 +3,8 @@ package springboot.service;
  * Script-Name: example_conversion_rate_request
  */
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mastercard.api.core.ApiConfig;
 import com.mastercard.api.core.exception.ApiException;
 import com.mastercard.api.core.model.Environment;
@@ -32,6 +34,7 @@ public class ConversionRateAdaptor {
     private static final String BANKFEE = "5";
     private Set<String> allCurrencies = new HashSet<>();
     private static Logger logger = LogManager.getLogger(ConversionRateAdaptor.class);
+    private Gson gson = new GsonBuilder().create();
 
     public ConversionRateAdaptor() {
         try {
@@ -52,7 +55,7 @@ public class ConversionRateAdaptor {
             RequestMap map = new RequestMap();
 
             Currencies response = Currencies.query(map);
-            logger.info("getAllCurrencies response: " + response.toString());
+            logger.debug("getAllCurrencies response: " + gson.toJson(response, response.getClass()));
             for (Map<String, Object> item : (List<Map<String, Object>>) response.get("data.currencies")) {
                 currencies.add((String) item.get("alphaCd"));
             }
@@ -72,7 +75,7 @@ public class ConversionRateAdaptor {
 
         try {
             RateIssued response = RateIssued.query(dateMap);
-            logger.debug("RateIssued response: " + response.toString());
+            logger.debug("RateIssued response: " + gson.toJson(response, response.getClass()));
             return (response.get("data.rateIssued") != null && response.get("data.rateIssued").equals("Yes"));
         } catch (ApiException e) {
             logger.error("isRateIssued: ", e);
