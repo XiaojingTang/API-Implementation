@@ -6,8 +6,6 @@ public interface EngineOutgoing {
 
     void login(EngineOutgoing user);
 
-    void logout(String user);
-
     void createAccount(String user, String currency);
 
     void fundAccount(long accountId, String transCurrency, double amount, String date);

@@ -3,6 +3,7 @@ package websocket.session;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.api.Session;
+import websocket.ApiOutgoing;
 import websocket.EngineIncoming;
 import websocket.EngineOutgoing;
 import websocket.messages.CreateAccountMsg;
@@ -28,11 +29,10 @@ public class SessionManager implements ISessionManager {
 
     public SessionManager(EngineIncoming engineIncoming) {
         this.engineIncoming = engineIncoming;
-        ;
     }
 
     public void sendLogin(String user) {
-        EngineOutgoing engineOutgoing = new EngineOutgoing(this, user);
+        EngineOutgoing engineOutgoing = new ApiOutgoing(this, user);
         engineIncoming.login(engineOutgoing);
     }
 
