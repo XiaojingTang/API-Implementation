@@ -1,26 +1,22 @@
 package websocket;
 
-import com.etale.otc.messages.InitializationMessage;
-
 public interface EngineOutgoing {
 
     String getName();
-
-    void initialization(InitializationMessage initializationMessage);
-
-    void updateUserPresence(String user, boolean joined);
 
     void login(EngineOutgoing user);
 
     void logout(String user);
 
-    void createAccount(String user, String accountName);
+    void createAccount(String user, String currency);
 
-    void deleteAccount(String user, String accountName);
+    void fundAccount(long accountId, String transCurrency, double amount, String date);
 
-    void incomingRequestForTransfer(String fromAccount, String toAccount, String amount);
+    void transferFund(long fromAccountId, long toAccountId, String transCurrency, double amount, String date);
 
-    void outgoingAcceptanceConfirmation(String originator, String rfqId);
+    void listAllAccounts();
 
-    void outgoingSendMessage(String sender, String recipient, String message);
+    void listAllFundRecords();
+
+    void listAllTransferRecords();
 }

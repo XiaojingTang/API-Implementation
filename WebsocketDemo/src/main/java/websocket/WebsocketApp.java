@@ -12,7 +12,7 @@ import java.util.List;
 public class WebsocketApp {
     public static void main(String[] args) {
         Logger logger = LogManager.getLogger(WebsocketApp.class);
-        PersistenceLayer persister = new H2Persister();
+        Persister persister = new H2Persister();
         EngineIncoming otcEngineIncoming = new OTCEngineIncoming(persister);
         int port = 8083;
 
@@ -40,10 +40,9 @@ public class WebsocketApp {
         }
     }
 
-    private static void initializationTestCases(EngineIncoming engineIncoming, PersistenceLayer persister) {
+    private static void initializationTestCases(EngineIncoming engineIncoming, Persister persister) {
         persister.clearData();
         persister.createTables();
-        persister.assignFriendTable();
 
         SessionManager otcSessionManager = new SessionManager(engineIncoming);
         EngineOutgoing MATT = new EngineOutgoing(otcSessionManager, "MATT");

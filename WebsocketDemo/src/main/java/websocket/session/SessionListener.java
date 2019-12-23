@@ -2,14 +2,11 @@ package websocket.session;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mastercard.messages.BaseMessage;
-import com.mastercard.messages.CreateAccountMsg;
-import com.mastercard.messages.LoginMsg;
-import com.mastercard.messages.LogoutMsg;
-import com.mastercard.websocket.ISessionListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.api.Session;
+import websocket.messages.*;
+import websocket.server.ISessionListener;
 
 import java.io.IOException;
 
@@ -30,7 +27,7 @@ public class SessionListener implements ISessionListener {
         sessionManager.addSession(session, SessionInfo);
         logger.info("Connected: " + sess);
         try {
-            session.getRemote().sendString(gson.toJson(new InfoMsg("Connected on build with B2C2Bot.", null, null)));
+            session.getRemote().sendString("Connected WebSocket API.");
         } catch (IOException e) {
             logger.error("Error writing to WS", e);
         }
@@ -64,17 +61,31 @@ public class SessionListener implements ISessionListener {
                         processCreateAccountMsg(createAccountMsg);
                         break;
 
-                    case DeleteGroupMsg.TYPE:
+                    case FundAccountMsg.TYPE:
                         logger.info("Message received: " + rawMsg);
-                        DeleteGroupMsg deleteGroupMsg = gson.fromJson(rawMsg, DeleteGroupMsg.class);
-                        processDeleteGroupMsg(deleteGroupMsg);
+                        FundAccountMsg fundAccountMsg = gson.fromJson(rawMsg, FundAccountMsg.class);
+                        processFundAccountMsg(fundAccountMsg);
                         break;
 
-                    case "PING":
+                    case TransferFundMsg.TYPE:
                         logger.info("Message received: " + rawMsg);
-                        PingPongMsg pingMsg = gson.fromJson(rawMsg, PingPongMsg.class);
-                        PingPongMsg pongMsg = new PingPongMsg(false, pingMsg.getTimestamp());
-                        processPingPongMsg(pongMsg);
+                        TransferFundMsg transferFundMsg = gson.fromJson(rawMsg, TransferFundMsg.class);
+                        processTransferFundMsg(transferFundMsg);
+                        break;
+
+                    case ListAllAccountsMsg.TYPE:
+                        logger.info("Message received: " + rawMsg);
+                        processListAllAccountsMsg();
+                        break;
+
+                    case ListAllFundRecordsMsg.TYPE:
+                        logger.info("Message received: " + rawMsg);
+                        processListAllFundRecordsMsg();
+                        break;
+
+                    case ListAllTransferRecordsMsg.TYPE:
+                        logger.info("Message received: " + rawMsg);
+                        processListAllTransferRecordsMsg();
                         break;
 
                     default:
@@ -89,30 +100,42 @@ public class SessionListener implements ISessionListener {
     }
 
     private void notifyError(String error) {
-        NotificationMsg notificationMsg = new NotificationMsg(NotificationMsg.Level.ERROR, NotificationMsg.Action.NOTIFY, error, null);
+        NotificationMsg notificationMsg = new NotificationMsg(error);
         sessionManager.sendMessageToSession(session, gson.toJson(notificationMsg));
     }
 
     private void processLoginMessage(LoginMsg msg) {
-        sessionManager.sendLogout(new LogoutMsg(msg.getUsername()), true);
-        SessionInfo.setSource(msg.getUsername());
-        sessionManager.sendLogin(msg.getUsername());
+        sessionManager.sendLogout(new LogoutMsg(msg.getUserName()), true);
+        SessionInfo.setSource(msg.getUserName());
+        sessionManager.sendLogin(msg.getUserName());
     }
 
     private void processLogoutMessage(LogoutMsg msg) {
         sessionManager.sendLogout(msg, false);
     }
 
-    private void processCreateAccountMsg(CreateGroupMsg msg) {
-        sessionManager.sendCreateGroupMsg(msg);
+    private void processCreateAccountMsg(CreateAccountMsg msg) {
+        sessionManager.sendCreateAccountMsg(msg);
     }
 
-    private void processDeleteAccountMsg(DeleteGroupMsg msg) {
-        sessionManager.sendDeleteGroupMsg(msg);
+    private void processFundAccountMsg(FundAccountMsg msg) {
+        sessionManager.sendFundAccountMsg(msg);
     }
 
-    private void processPingPongMsg(PingPongMsg pingPongMsg) {
-        sessionManager.sendMessageToSession(this.session, gson.toJson(pingPongMsg, PingPongMsg.class));
+    private void processTransferFundMsg(TransferFundMsg msg) {
+        sessionManager.sendTransferFundMsg(msg);
+    }
+
+    private void processListAllAccountsMsg() {
+        sessionManager.sendListAllAccountsMsg();
+    }
+
+    private void processListAllFundRecordsMsg() {
+        sessionManager.sendListAllFundRecordsMsg();
+    }
+
+    private void processListAllTransferRecordsMsg() {
+        sessionManager.sendListAllTransferRecordsMsg();
     }
 
     @Override

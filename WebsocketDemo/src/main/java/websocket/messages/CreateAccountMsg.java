@@ -5,17 +5,15 @@ public class CreateAccountMsg extends BaseMessage {
 
     private String user;
     private String currency;
-    private Double balance;
 
     public CreateAccountMsg() {
         super(TYPE);
     }
 
-    public CreateAccountMsg(String user, String currency, Double balance) {
+    public CreateAccountMsg(String user, String currency) {
         this();
         this.user = user;
         this.currency = currency;
-        this.balance = balance;
     }
 
     public String getUser() {
@@ -24,9 +22,5 @@ public class CreateAccountMsg extends BaseMessage {
 
     public String getCurrency() {
         return currency;
-    }
-
-    public Double getBalance() {
-        return balance;
     }
 }

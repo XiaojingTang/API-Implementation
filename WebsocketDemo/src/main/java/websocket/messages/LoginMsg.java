@@ -23,13 +23,4 @@ public class LoginMsg extends BaseMessage {
     public String getPassword() {
         return password;
     }
-
-    @Override
-    public String toString() {
-        return "LoginMsg{" +
-                "userName='" + userName + '\'' +
-                ", password='" + password + '\'' +
-                ", type='" + type + '\'' +
-                '}';
-    }
 }

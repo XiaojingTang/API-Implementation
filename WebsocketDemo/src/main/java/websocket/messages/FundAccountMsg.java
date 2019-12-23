@@ -3,16 +3,16 @@ package websocket.messages;
 public class FundAccountMsg extends BaseMessage {
     public static final String TYPE = "FUND_ACCOUNT";
 
-    private Long accountId;
+    private long accountId;
     private String transCurrency;
-    private Double amount;
+    private double amount;
     private String date;
 
     public FundAccountMsg() {
         super(TYPE);
     }
 
-    public FundAccountMsg(Long accountId, String transCurrency, Double amount, String date) {
+    public FundAccountMsg(long accountId, String transCurrency, double amount, String date) {
         this();
         this.accountId = accountId;
         this.transCurrency = transCurrency;
@@ -20,7 +20,7 @@ public class FundAccountMsg extends BaseMessage {
         this.date = date;
     }
 
-    public Long getAccountId() {
+    public long getAccountId() {
         return accountId;
     }
 
@@ -28,7 +28,7 @@ public class FundAccountMsg extends BaseMessage {
         return transCurrency;
     }
 
-    public Double getAmount() {
+    public double getAmount() {
         return amount;
     }
 

@@ -6,11 +6,15 @@ public interface EngineIncoming {
 
     void logout(String user);
 
-    void createAccount(String user, String accountName, String currency);
+    void createAccount(String user, String currency);
 
-    void fundAccount(String user, String accountName, double amount);
+    void fundAccount(long accountId, String transCurrency, double amount, String date);
 
-    void deleteAccount(String user, String accountName);
+    void transferFund(long fromAccountId, long toAccountId, String transCurrency, double amount, String date);
 
-    void incomingRequestForTransfer(String fromAccount, String toAccount, String amount);
+    void listAllAccounts();
+
+    void listAllFundRecords();
+
+    void listAllTransferRecords();
 }

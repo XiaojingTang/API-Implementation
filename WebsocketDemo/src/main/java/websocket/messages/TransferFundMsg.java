@@ -1,7 +1,7 @@
 package websocket.messages;
 
 public class TransferFundMsg extends BaseMessage {
-    public static final String TYPE = "FUND_ACCOUNT";
+    public static final String TYPE = "TRANSFER_FUND";
 
     private long fromAccountId;
     private long toAccountId;

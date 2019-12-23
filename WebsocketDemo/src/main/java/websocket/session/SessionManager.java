@@ -5,16 +5,20 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.EngineIncoming;
 import websocket.EngineOutgoing;
+import websocket.messages.CreateAccountMsg;
+import websocket.messages.FundAccountMsg;
 import websocket.messages.LogoutMsg;
+import websocket.messages.TransferFundMsg;
 import websocket.server.ISessionListener;
 import websocket.server.ISessionManager;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 public class SessionManager implements ISessionManager {
     private static Logger logger = LogManager.getLogger(SessionManager.class);
-    private IncrementingIDGenerator idGenerator = new IncrementingIDGenerator();
+    private UUID idGenerator = UUID.randomUUID();
 
     private ExecutorService executor = Executors.newFixedThreadPool(10);
     public static final int PUBLISH_TIME_OUT = 1000;
@@ -24,7 +28,7 @@ public class SessionManager implements ISessionManager {
 
     public SessionManager(EngineIncoming engineIncoming) {
         this.engineIncoming = engineIncoming;
-        idGenerator.initialize(System.currentTimeMillis());
+        ;
     }
 
     public void sendLogin(String user) {
@@ -37,32 +41,39 @@ public class SessionManager implements ISessionManager {
     }
 
     public void sendLogout(LogoutMsg msg, Boolean forceSignOut) {
-        Session session = findSession(msg.getUsername());
+        Session session = findSession(msg.getUserName());
         if (session != null) {
-            logger.info("Removing session for user: " + msg.getUsername());
+            logger.info("Removing session for user: " + msg.getUserName());
             if (forceSignOut) {
-                String reason = MsgToStringConverter.convert(new ForceSignoutMsg("You have been signed out because you have logged in at a different location."));
+                String reason = "You have been signed out because you have logged in at a different location.";
                 sendMessageToSession(session, reason);
             }
             removeSession(session);
         }
     }
 
-
-    public void sendCreateGroupMsg(CreateGroupMsg msg) {
-        engineIncoming.createGroup(msg.getUsername(), msg.getGroupName());
+    public void sendCreateAccountMsg(CreateAccountMsg msg) {
+        engineIncoming.createAccount(msg.getUser(), msg.getCurrency());
     }
 
-    public void sendDeleteGroupMsg(DeleteGroupMsg msg) {
-        engineIncoming.deleteGroup(msg.getUsername(), msg.getGroupName());
+    public void sendFundAccountMsg(FundAccountMsg msg) {
+        engineIncoming.fundAccount(msg.getAccountId(), msg.getTransCurrency(), msg.getAmount(), msg.getDate());
     }
 
-    public void sendAddToGroupMsg(AddToGroupMsg msg) {
-        engineIncoming.addToGroup(msg.getUsername(), msg.getGroupName(), msg.getNewMember());
+    public void sendTransferFundMsg(TransferFundMsg msg) {
+        engineIncoming.transferFund(msg.getFromAccountId(), msg.getToAccountId(), msg.getTransCurrency(), msg.getAmount(), msg.getDate());
     }
 
-    public void sendRemoveFromGroupMsg(RemoveFromGroupMsg msg) {
-        engineIncoming.removeFromGroup(msg.getUsername(), msg.getGroupName(), msg.getMember());
+    public void sendListAllAccountsMsg() {
+        engineIncoming.listAllAccounts();
+    }
+
+    public void sendListAllFundRecordsMsg() {
+        engineIncoming.listAllFundRecords();
+    }
+
+    public void sendListAllTransferRecordsMsg() {
+        engineIncoming.listAllTransferRecords();
     }
 
     private Session findSession(String user) {
@@ -109,10 +120,6 @@ public class SessionManager implements ISessionManager {
     public void removeSession(Session session) {
         engineIncoming.logout(sessionMap.get(session).getSource());
         sessionMap.remove(session);
-    }
-
-    public IncrementingIDGenerator getIdGenerator() {
-        return idGenerator;
     }
 
     public ISessionListener getSessionListener() {
