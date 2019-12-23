@@ -6,7 +6,7 @@ import websocket.objects.TransferRecord;
 
 import java.util.List;
 
-public interface Persister {
+public interface PersistenceLayer {
 
     void createTables();
 
@@ -19,6 +19,8 @@ public interface Persister {
 
     void addToTransferRecord(long fromAccountId, long toAccountId, String transCurrency, double amount, String date, double conversionRate,
                              double crdhldBillAmt, long bankFee);
+
+    Account findById(long accountId);
 
     void setAccountBalance(long accountId, double amount);
 

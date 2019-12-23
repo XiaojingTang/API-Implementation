@@ -4,7 +4,7 @@ public interface EngineIncoming {
 
     void login(EngineOutgoing user);
 
-    void logout(String user);
+    void logout(EngineOutgoing user);
 
     void createAccount(String user, String currency);
 

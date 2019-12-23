@@ -36,10 +36,6 @@ public class SessionManager implements ISessionManager {
         engineIncoming.login(engineOutgoing);
     }
 
-    public void sendLogin(EngineOutgoing user) {
-        engineIncoming.login(user);
-    }
-
     public void sendLogout(LogoutMsg msg, Boolean forceSignOut) {
         Session session = findSession(msg.getUserName());
         if (session != null) {

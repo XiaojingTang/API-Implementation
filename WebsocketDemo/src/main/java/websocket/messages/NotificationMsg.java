@@ -1,7 +1,7 @@
 package websocket.messages;
 
 public class NotificationMsg extends BaseMessage {
-    public static final String TYPE = "notification";
+    public static final String TYPE = "NOTIFICATION";
 
     private String message;
 

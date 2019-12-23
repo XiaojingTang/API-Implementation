@@ -12,8 +12,8 @@ import java.util.List;
 public class WebsocketApp {
     public static void main(String[] args) {
         Logger logger = LogManager.getLogger(WebsocketApp.class);
-        Persister persister = new H2Persister();
-        EngineIncoming otcEngineIncoming = new OTCEngineIncoming(persister);
+        PersistenceLayer persistenceLayer = new H2Persister();
+        EngineIncoming otcEngineIncoming = new OTCEngineIncoming(persistenceLayer);
         int port = 8083;
 
         if (args.length > 0) {
@@ -30,7 +30,7 @@ public class WebsocketApp {
             SessionManager sessionManager = new SessionManager(otcEngineIncoming);
 
 //            B2C2Bot b2C2Bot = new B2C2Bot(otcSessionManager, "B2C2Bot");
-            initializationTestCases(otcEngineIncoming, persister);
+            initializationTestCases(otcEngineIncoming, persistenceLayer);
 
             logger.info("Listening on port " + port);
             new WebSocketServer(port, sessionManager);
@@ -40,9 +40,9 @@ public class WebsocketApp {
         }
     }
 
-    private static void initializationTestCases(EngineIncoming engineIncoming, Persister persister) {
-        persister.clearData();
-        persister.createTables();
+    private static void initializationTestCases(EngineIncoming engineIncoming, PersistenceLayer persistenceLayer) {
+        persistenceLayer.clearData();
+        persistenceLayer.createTables();
 
         SessionManager otcSessionManager = new SessionManager(engineIncoming);
         EngineOutgoing MATT = new EngineOutgoing(otcSessionManager, "MATT");

@@ -12,7 +12,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class H2Persister implements Persister {
+public class H2Persister implements PersistenceLayer {
 
     private static Logger logger = LogManager.getLogger(H2Persister.class);
     private static final String url = "jdbc:h2:tcp://localhost:8092/~/websocketapi";
@@ -147,6 +147,25 @@ public class H2Persister implements Persister {
         } catch (Exception e) {
             logger.error("Error in addToFundRecord: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public Account findById(long accountId) {
+        String insertStr = "SELECT * FROM ACCOUNT" +
+                "WHILE id=?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertStr)) {
+            preparedStatement.setLong(1, accountId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Account account = new Account(resultSet.getLong("id"), resultSet.getString("user"),
+                        resultSet.getString("currency"), resultSet.getDouble("balance"));
+                return account;
+            }
+        } catch (Exception e) {
+            logger.error("Error in findById: " + e.getMessage(), e);
+        }
+        return null;
     }
 
     @Override

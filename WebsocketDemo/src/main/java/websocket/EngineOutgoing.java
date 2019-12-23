@@ -1,20 +1,19 @@
 package websocket;
 
+import websocket.messages.AllAccountsMsg;
+import websocket.messages.AllFundRecordsMsg;
+import websocket.messages.AllTransferRecordsMsg;
+import websocket.messages.NotificationMsg;
+
 public interface EngineOutgoing {
 
     String getName();
 
-    void login(EngineOutgoing user);
+    void sendNotification(NotificationMsg notificationMsg);
 
-    void createAccount(String user, String currency);
+    void sendAllAccounts(AllAccountsMsg allAccountsMsg);
 
-    void fundAccount(long accountId, String transCurrency, double amount, String date);
+    void sendAllFundRecords(AllFundRecordsMsg allFundRecordsMsg);
 
-    void transferFund(long fromAccountId, long toAccountId, String transCurrency, double amount, String date);
-
-    void listAllAccounts();
-
-    void listAllFundRecords();
-
-    void listAllTransferRecords();
+    void sendAllTransferRecords(AllTransferRecordsMsg allTransferRecordsMsg);
 }
