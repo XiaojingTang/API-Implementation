@@ -14,7 +14,6 @@ public class SessionListener implements ISessionListener {
     private static Logger logger = LogManager.getLogger(SessionListener.class);
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private SessionManager sessionManager;
-    private SessionInfo SessionInfo = new SessionInfo();
     private Session session;
 
     public SessionListener(SessionManager sessionManager) {
@@ -24,10 +23,10 @@ public class SessionListener implements ISessionListener {
     @Override
     public void onConnect(Session sess) {
         this.session = sess;
-        sessionManager.addSession(session, SessionInfo);
+        sessionManager.setSession(session);
         logger.info("Connected: " + sess);
         try {
-            session.getRemote().sendString("Connected WebSocket API.");
+            session.getRemote().sendString("WebSocket API connected.");
         } catch (IOException e) {
             logger.error("Error writing to WS", e);
         }
@@ -43,18 +42,6 @@ public class SessionListener implements ISessionListener {
         } else {
             try {
                 switch (msg.getType()) {
-                    case LoginMsg.TYPE:
-                        logger.info("Message received: " + rawMsg);
-                        LoginMsg loginMsg = gson.fromJson(rawMsg, LoginMsg.class);
-                        processLoginMessage(loginMsg);
-                        break;
-
-                    case LogoutMsg.TYPE:
-                        logger.info("Message received: " + rawMsg);
-                        LogoutMsg logoutMsg = gson.fromJson(rawMsg, LogoutMsg.class);
-                        processLogoutMessage(logoutMsg);
-                        break;
-
                     case CreateAccountMsg.TYPE:
                         logger.info("Message received: " + rawMsg);
                         CreateAccountMsg createAccountMsg = gson.fromJson(rawMsg, CreateAccountMsg.class);
@@ -101,17 +88,7 @@ public class SessionListener implements ISessionListener {
 
     private void notifyError(String error) {
         NotificationMsg notificationMsg = new NotificationMsg(error);
-        sessionManager.sendMessageToSession(session, gson.toJson(notificationMsg));
-    }
-
-    private void processLoginMessage(LoginMsg msg) {
-        sessionManager.sendLogout(new LogoutMsg(msg.getUserName()), true);
-        SessionInfo.setSource(msg.getUserName());
-        sessionManager.sendLogin(msg.getUserName());
-    }
-
-    private void processLogoutMessage(LogoutMsg msg) {
-        sessionManager.sendLogout(msg, false);
+        sessionManager.sendMessageToSession(gson.toJson(notificationMsg));
     }
 
     private void processCreateAccountMsg(CreateAccountMsg msg) {
@@ -141,7 +118,7 @@ public class SessionListener implements ISessionListener {
     @Override
     public void onClose(int status, String reason) {
         logger.info("Removing session: " + reason);
-        sessionManager.removeSession(session);
+        sessionManager.setSession(null);
         if (this.session != null) {
             this.session.close();
         }

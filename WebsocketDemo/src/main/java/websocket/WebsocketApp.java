@@ -1,66 +1,33 @@
 package websocket;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import websocket.messages.CreateAccountMsg;
 import websocket.server.WebSocketServer;
 import websocket.session.SessionManager;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class WebsocketApp {
     public static void main(String[] args) {
         Logger logger = LogManager.getLogger(WebsocketApp.class);
         PersistenceLayer persistenceLayer = new H2Persister();
-        EngineIncoming otcEngineIncoming = new OTCEngineIncoming(persistenceLayer);
-        int port = 8083;
+        EngineIncoming engineIncoming = new ApiIncoming(persistenceLayer);
+        int port = 8082;
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        if (args.length > 0) {
-            port = Integer.parseInt(args[0]);
-        }
+        SessionManager sessionManager = new SessionManager(engineIncoming);
+//            initializationTestCases(apiIncoming, persistenceLayer);
 
-        try {
-            ExchangeConfig.configureFromResource("exchange_config.properties");
-            ExchangeConfig econfig = ExchangeConfig.getInstance();
-
-            CommonConfigMsg commonConfigMsg = ExchangeConfig.buildCommonConfig(econfig);
-            List<String> exchanges = new ArrayList<>(econfig.getExchangeNames());
-
-            SessionManager sessionManager = new SessionManager(otcEngineIncoming);
-
-//            B2C2Bot b2C2Bot = new B2C2Bot(otcSessionManager, "B2C2Bot");
-            initializationTestCases(otcEngineIncoming, persistenceLayer);
-
-            logger.info("Listening on port " + port);
-            new WebSocketServer(port, sessionManager);
-        } catch (Exception cex) {
-            logger.error(cex.getMessage(), cex);
-            System.exit(1);
-        }
+        CreateAccountMsg createAccountMsg = new CreateAccountMsg("Jean", "USD");
+//     FundAccountMsg fundAccountMsg = new FundAccountMsg(long accountId, String transCurrency, double amount, String date) {
+        System.out.println(gson.toJson(createAccountMsg));
+        logger.info("Listening on port " + port);
+        new WebSocketServer(port, sessionManager);
     }
 
-    private static void initializationTestCases(EngineIncoming engineIncoming, PersistenceLayer persistenceLayer) {
+    private static void initializationTestCases(EngineIncoming apiIncoming, PersistenceLayer persistenceLayer) {
         persistenceLayer.clearData();
         persistenceLayer.createTables();
-
-        SessionManager otcSessionManager = new SessionManager(engineIncoming);
-        EngineOutgoing MATT = new EngineOutgoing(otcSessionManager, "MATT");
-
-        otcEngineIncoming.login(MATT);
-
-        otcEngineIncoming.incomingRequestForQuote(new RFQMsgIncoming("1", "MATT", "BTC-USD", 10, System.currentTimeMillis(), System.currentTimeMillis(), Arrays.asList("GOLDMAN"), Arrays.asList("HSBC")));
-
-        otcEngineIncoming.createGroup("MATT", "Core");
-        otcEngineIncoming.addToGroup("MATT", "Core", "GOLDMAN");
-        otcEngineIncoming.addToGroup("MATT", "Core", "HSBC");
-        otcEngineIncoming.createGroup("MATT", "Related");
-        otcEngineIncoming.addToGroup("MATT", "Related", "CITADEL");
-        otcEngineIncoming.addToGroup("MATT", "Related", "BNP");
-
-        otcEngineIncoming.logout("MATT");
-        otcEngineIncoming.logout("CITADEL");
-        otcEngineIncoming.logout("GOLDMAN");
-        otcEngineIncoming.logout("HSBC");
     }
 }

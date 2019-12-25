@@ -11,35 +11,28 @@ import websocket.session.SessionManager;
 public class ApiOutgoing implements EngineOutgoing {
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private SessionManager sessionManager;
-    private String name;
 
-    public ApiOutgoing(SessionManager sessionManager, String name) {
+    public ApiOutgoing(SessionManager sessionManager) {
         this.sessionManager = sessionManager;
-        this.name = name;
-    }
-
-    @Override
-    public String getName() {
-        return null;
     }
 
     @Override
     public void sendNotification(NotificationMsg notificationMsg) {
-
+        sessionManager.sendMessageToSession(gson.toJson(notificationMsg));
     }
 
     @Override
     public void sendAllAccounts(AllAccountsMsg allAccountsMsg) {
-
+        sessionManager.sendMessageToSession(gson.toJson(allAccountsMsg));
     }
 
     @Override
     public void sendAllFundRecords(AllFundRecordsMsg allFundRecordsMsg) {
-
+        sessionManager.sendMessageToSession(gson.toJson(allFundRecordsMsg));
     }
 
     @Override
     public void sendAllTransferRecords(AllTransferRecordsMsg allTransferRecordsMsg) {
-
+        sessionManager.sendMessageToSession(gson.toJson(allTransferRecordsMsg));
     }
 }

@@ -1,10 +1,7 @@
 package websocket;
 
 public interface EngineIncoming {
-
-    void login(EngineOutgoing user);
-
-    void logout(EngineOutgoing user);
+    void setOutgoing(EngineOutgoing outgoing);
 
     void createAccount(String user, String currency);
 

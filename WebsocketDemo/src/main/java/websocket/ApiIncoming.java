@@ -1,9 +1,7 @@
 package websocket;
 
-import com.mastercard.api.currencyconversion.ConversionRate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import websocket.connectors.ConversionRateAdaptor;
 import websocket.messages.AllAccountsMsg;
 import websocket.messages.AllFundRecordsMsg;
 import websocket.messages.AllTransferRecordsMsg;
@@ -16,7 +14,7 @@ import java.util.List;
 
 public class ApiIncoming implements EngineIncoming {
     private static Logger logger = LogManager.getLogger(ApiIncoming.class);
-    private ConversionRateAdaptor conversionRateAdaptor = new ConversionRateAdaptor();
+//    private ConversionRateAdaptor conversionRateAdaptor = new ConversionRateAdaptor();
     private PersistenceLayer persister;
     private EngineOutgoing outgoing;
 
@@ -25,13 +23,8 @@ public class ApiIncoming implements EngineIncoming {
     }
 
     @Override
-    public void login(EngineOutgoing user) {
-        this.outgoing = user;
-    }
-
-    @Override
-    public void logout(EngineOutgoing user) {
-
+    public void setOutgoing(EngineOutgoing outgoing) {
+        this.outgoing = outgoing;
     }
 
     @Override
@@ -42,37 +35,37 @@ public class ApiIncoming implements EngineIncoming {
 
     @Override
     public void fundAccount(long accountId, String transCurrency, double amount, String date) {
-        if (!conversionRateAdaptor.isRateIssued(date)) {
-            outgoing.sendNotification(new NotificationMsg("No conversion rate available on the date."));
-            return;
-        }
-        if (!conversionRateAdaptor.isValidCurrency(transCurrency)) {
-            outgoing.sendNotification(new NotificationMsg("Currency is not valid."));
-            return;
-        }
+//        if (!conversionRateAdaptor.isRateIssued(date)) {
+//            outgoing.sendNotification(new NotificationMsg("No conversion rate available on the date."));
+//            return;
+//        }
+//        if (!conversionRateAdaptor.isValidCurrency(transCurrency)) {
+//            outgoing.sendNotification(new NotificationMsg("Currency is not valid."));
+//            return;
+//        }
 
         Account account = persister.findById(accountId);
         if (account == null) {
             outgoing.sendNotification(new NotificationMsg("accountId is not valid."));
             return;
         }
-        ConversionRate conversionRate = conversionRateAdaptor.getConversionRate(date, transCurrency, account.getCurrency(), String.valueOf(amount));
-        persister.setAccountBalance(accountId, account.getBalance() + (double) conversionRate.get("data.crdhldBillAmt"));
-        persister.addToFundRecord(accountId, transCurrency, amount, date, (double) conversionRate.get("data.conversionRate"),
-                (double) conversionRate.get("data.crdhldBillAmt"), (long) conversionRate.get("data.bankFee"));
-        outgoing.sendNotification(new NotificationMsg("Accounted funded."));
+//        ConversionRate conversionRate = conversionRateAdaptor.getConversionRate(date, transCurrency, account.getCurrency(), String.valueOf(amount));
+//        persister.setAccountBalance(accountId, account.getBalance() + (double) conversionRate.get("data.crdhldBillAmt"));
+//        persister.addToFundRecord(accountId, transCurrency, amount, date, (double) conversionRate.get("data.conversionRate"),
+//                (double) conversionRate.get("data.crdhldBillAmt"), (long) conversionRate.get("data.bankFee"));
+//        outgoing.sendNotification(new NotificationMsg("Accounted funded."));
     }
 
     @Override
     public void transferFund(long fromAccountId, long toAccountId, String transCurrency, double amount, String date) {
-        if (!conversionRateAdaptor.isRateIssued(date)) {
-            outgoing.sendNotification(new NotificationMsg("No conversion rate available on the date."));
-            return;
-        }
-        if (!conversionRateAdaptor.isValidCurrency(transCurrency)) {
-            outgoing.sendNotification(new NotificationMsg("Currency is not valid."));
-            return;
-        }
+//        if (!conversionRateAdaptor.isRateIssued(date)) {
+//            outgoing.sendNotification(new NotificationMsg("No conversion rate available on the date."));
+//            return;
+//        }
+//        if (!conversionRateAdaptor.isValidCurrency(transCurrency)) {
+//            outgoing.sendNotification(new NotificationMsg("Currency is not valid."));
+//            return;
+//        }
 
         Account fromAccount = persister.findById(fromAccountId);
         if (fromAccount == null) {
@@ -88,12 +81,12 @@ public class ApiIncoming implements EngineIncoming {
             outgoing.sendNotification(new NotificationMsg("toAccountId is not valid."));
             return;
         }
-        ConversionRate conversionRate = conversionRateAdaptor.getConversionRate(date, transCurrency, toAccount.getCurrency(), String.valueOf(amount));
-        persister.setAccountBalance(fromAccountId, fromAccount.getBalance() - amount);
-        persister.setAccountBalance(toAccountId, toAccount.getBalance() + (double) conversionRate.get("data.crdhldBillAmt"));
-        persister.addToTransferRecord(fromAccountId, toAccountId, transCurrency, amount, date, (double) conversionRate.get("data.conversionRate"),
-                (double) conversionRate.get("data.crdhldBillAmt"), (long) conversionRate.get("data.bankFee"));
-        outgoing.sendNotification(new NotificationMsg("Fund transferred."));
+//        ConversionRate conversionRate = conversionRateAdaptor.getConversionRate(date, transCurrency, toAccount.getCurrency(), String.valueOf(amount));
+//        persister.setAccountBalance(fromAccountId, fromAccount.getBalance() - amount);
+//        persister.setAccountBalance(toAccountId, toAccount.getBalance() + (double) conversionRate.get("data.crdhldBillAmt"));
+//        persister.addToTransferRecord(fromAccountId, toAccountId, transCurrency, amount, date, (double) conversionRate.get("data.conversionRate"),
+//                (double) conversionRate.get("data.crdhldBillAmt"), (long) conversionRate.get("data.bankFee"));
+//        outgoing.sendNotification(new NotificationMsg("Fund transferred."));
     }
 
     @Override

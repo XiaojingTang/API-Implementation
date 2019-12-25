@@ -7,8 +7,6 @@ import websocket.messages.NotificationMsg;
 
 public interface EngineOutgoing {
 
-    String getName();
-
     void sendNotification(NotificationMsg notificationMsg);
 
     void sendAllAccounts(AllAccountsMsg allAccountsMsg);
