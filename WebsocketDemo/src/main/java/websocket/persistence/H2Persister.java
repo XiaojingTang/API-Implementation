@@ -15,13 +15,14 @@ import java.util.List;
 public class H2Persister implements Persister {
 
     private static Logger logger = LogManager.getLogger(H2Persister.class);
-    private static final String url = "jdbc:h2:tcp://localhost:8092/~/test";
+    private static final String url = "jdbc:h2:tcp://localhost:8092/~/apitst";
     private static final String user = "sa";
     private static final String password = "";
     private Connection connection;
 
     public H2Persister() {
         getConnection();
+        clearData();
         createTables();
     }
 
@@ -49,22 +50,21 @@ public class H2Persister implements Persister {
     @Override
     public void createTables() {
         String createAccount = "CREATE TABLE IF NOT EXISTS ACCOUNT (" +
-                "id BIGINT AUTO_INCREMENT," +
+                "id BIGINT AUTO_INCREMENT ," +
                 "user VARCHAR(128) NOT NULL, " +
                 "currency VARCHAR(128) NOT NULL," +
                 "balance FLOAT)";
         String createFundRecord = "CREATE TABLE IF NOT EXISTS FUNDRECORD (" +
-                "id BIGINT NOT NULL AUTO_INCREMENT," +
+                "id BIGINT AUTO_INCREMENT," +
                 "accountId BIGINT NOT NULL, " +
                 "amount FLOAT, " +
                 "bankfee BIGINT, " +
                 "conversionRate FLOAT, " +
                 "crdhldBillAmt FLOAT, " +
                 "date VARCHAR(128), " +
-                "transCurrency VARCHAR(128) NOT NULL, " +
-                "PRIMARY KEY (id) )";
+                "transCurrency VARCHAR(128) NOT NULL)";
         String createTransferRecord = "CREATE TABLE IF NOT EXISTS TRANSFERRECORD (" +
-                "id BIGINT NOT NULL AUTO_INCREMENT," +
+                "id BIGINT AUTO_INCREMENT," +
                 "fromAccountId BIGINT NOT NULL, " +
                 "toAccountId BIGINT NOT NULL, " +
                 "amount FLOAT, " +
@@ -72,8 +72,7 @@ public class H2Persister implements Persister {
                 "conversionRate FLOAT, " +
                 "crdhldBillAmt FLOAT, " +
                 "date VARCHAR(128), " +
-                "transCurrency VARCHAR(128) NOT NULL, " +
-                "PRIMARY KEY (id) )";
+                "transCurrency VARCHAR(128) NOT NULL)";
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(createAccount);
@@ -155,8 +154,8 @@ public class H2Persister implements Persister {
 
     @Override
     public Account findById(long accountId) {
-        String insertStr = "SELECT * FROM ACCOUNT" +
-                "WHILE id=?";
+        String insertStr = "SELECT * FROM ACCOUNT " +
+                "WHERE id=?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertStr)) {
             preparedStatement.setLong(1, accountId);
@@ -175,7 +174,7 @@ public class H2Persister implements Persister {
     @Override
     public void setAccountBalance(long accountId, double amount) {
         String insertStr = "UPDATE ACCOUNT SET balance=? " +
-                "WHERE accountId=?;";
+                "WHERE id=?;";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertStr)) {
             preparedStatement.setDouble(1, amount);

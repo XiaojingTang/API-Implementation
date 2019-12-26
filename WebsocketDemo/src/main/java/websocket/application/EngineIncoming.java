@@ -1,6 +1,7 @@
 package websocket.application;
 
 public interface EngineIncoming {
+
     void setOutgoing(EngineOutgoing outgoing);
 
     void createAccount(String user, String currency);

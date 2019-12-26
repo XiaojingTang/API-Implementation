@@ -7,7 +7,9 @@ import org.apache.logging.log4j.Logger;
 import websocket.application.ApiIncoming;
 import websocket.application.EngineIncoming;
 import websocket.messages.CreateAccountMsg;
+import websocket.messages.FundAccountMsg;
 import websocket.messages.ListAllAccountsMsg;
+import websocket.messages.TransferFundMsg;
 import websocket.persistence.H2Persister;
 import websocket.persistence.Persister;
 import websocket.session.SessionManager;
@@ -22,20 +24,17 @@ public class WebsocketApp {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         SessionManager sessionManager = new SessionManager(engineIncoming);
-//            initializationTestCases(apiIncoming, persistenceLayer);
 
         CreateAccountMsg createAccountMsg = new CreateAccountMsg("Jean", "USD");
         System.out.println(gson.toJson(createAccountMsg));
         ListAllAccountsMsg listAllAccountsMsg = new ListAllAccountsMsg();
         System.out.println(gson.toJson(listAllAccountsMsg));
 
-//     FundAccountMsg fundAccountMsg = new FundAccountMsg(long accountId, String transCurrency, double amount, String date) {
+        FundAccountMsg fundAccountMsg = new FundAccountMsg(1, "DZD", 200, "2019-01-01");
+        System.out.println(gson.toJson(fundAccountMsg));
+        TransferFundMsg transferFundMsg = new TransferFundMsg(1, 2, "USD", 100, "2019-03-01");
+        System.out.println(gson.toJson(transferFundMsg));
         logger.info("Listening on port " + port);
         new WebSocketServer(port, sessionManager);
-    }
-
-    private static void initializationTestCases(EngineIncoming apiIncoming, Persister persister) {
-        persister.clearData();
-        persister.createTables();
     }
 }
