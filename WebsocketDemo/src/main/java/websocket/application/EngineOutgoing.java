@@ -1,4 +1,4 @@
-package websocket;
+package websocket.application;
 
 import websocket.messages.AllAccountsMsg;
 import websocket.messages.AllFundRecordsMsg;

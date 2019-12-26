@@ -1,4 +1,4 @@
-package websocket;
+package websocket.application;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,16 +9,17 @@ import websocket.messages.NotificationMsg;
 import websocket.objects.Account;
 import websocket.objects.FundRecord;
 import websocket.objects.TransferRecord;
+import websocket.persistence.Persister;
 
 import java.util.List;
 
 public class ApiIncoming implements EngineIncoming {
     private static Logger logger = LogManager.getLogger(ApiIncoming.class);
-//    private ConversionRateAdaptor conversionRateAdaptor = new ConversionRateAdaptor();
-    private PersistenceLayer persister;
+    //    private ConversionRateAdaptor conversionRateAdaptor = new ConversionRateAdaptor();
+    private Persister persister;
     private EngineOutgoing outgoing;
 
-    public ApiIncoming(PersistenceLayer persister) {
+    public ApiIncoming(Persister persister) {
         this.persister = persister;
     }
 

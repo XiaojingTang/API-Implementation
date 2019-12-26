@@ -1,4 +1,4 @@
-package websocket;
+package websocket.persistence;
 
 
 import org.apache.logging.log4j.LogManager;
@@ -12,13 +12,12 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class H2Persister implements PersistenceLayer {
+public class H2Persister implements Persister {
 
     private static Logger logger = LogManager.getLogger(H2Persister.class);
-    private static final String url = "jdbc:h2:tcp://localhost:8092/~/websocketapi";
+    private static final String url = "jdbc:h2:tcp://localhost:8092/~/test";
     private static final String user = "sa";
     private static final String password = "";
-    private static final String friendResource = "userFriends.properties";
     private Connection connection;
 
     public H2Persister() {
@@ -50,18 +49,22 @@ public class H2Persister implements PersistenceLayer {
     @Override
     public void createTables() {
         String createAccount = "CREATE TABLE IF NOT EXISTS ACCOUNT (" +
+                "id BIGINT AUTO_INCREMENT," +
                 "user VARCHAR(128) NOT NULL, " +
                 "currency VARCHAR(128) NOT NULL," +
-                "balance FLOAT )";
+                "balance FLOAT)";
         String createFundRecord = "CREATE TABLE IF NOT EXISTS FUNDRECORD (" +
+                "id BIGINT NOT NULL AUTO_INCREMENT," +
                 "accountId BIGINT NOT NULL, " +
                 "amount FLOAT, " +
                 "bankfee BIGINT, " +
                 "conversionRate FLOAT, " +
                 "crdhldBillAmt FLOAT, " +
                 "date VARCHAR(128), " +
-                "transCurrency VARCHAR(128) NOT NULL )";
+                "transCurrency VARCHAR(128) NOT NULL, " +
+                "PRIMARY KEY (id) )";
         String createTransferRecord = "CREATE TABLE IF NOT EXISTS TRANSFERRECORD (" +
+                "id BIGINT NOT NULL AUTO_INCREMENT," +
                 "fromAccountId BIGINT NOT NULL, " +
                 "toAccountId BIGINT NOT NULL, " +
                 "amount FLOAT, " +
@@ -69,7 +72,8 @@ public class H2Persister implements PersistenceLayer {
                 "conversionRate FLOAT, " +
                 "crdhldBillAmt FLOAT, " +
                 "date VARCHAR(128), " +
-                "transCurrency VARCHAR(128) NOT NULL )";
+                "transCurrency VARCHAR(128) NOT NULL, " +
+                "PRIMARY KEY (id) )";
 
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(createAccount);
@@ -95,7 +99,7 @@ public class H2Persister implements PersistenceLayer {
 
     @Override
     public void addToAccount(String user, String currency) {
-        String insertStr = "INSERT INTO ACCOUNT (user, currency, balance)" +
+        String insertStr = "INSERT INTO ACCOUNT (user, currency, balance) " +
                 "VALUES (?, ?, ?);";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertStr)) {

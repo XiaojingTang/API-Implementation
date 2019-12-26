@@ -1,4 +1,4 @@
-package websocket.server;
+package websocket.wsserver;
 
 public interface ISessionManager {
     ISessionListener getSessionListener();

@@ -1,4 +1,4 @@
-package websocket;
+package websocket.application;
 
 public interface EngineIncoming {
     void setOutgoing(EngineOutgoing outgoing);

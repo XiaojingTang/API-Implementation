@@ -1,4 +1,4 @@
-package websocket;
+package websocket.persistence;
 
 import websocket.objects.Account;
 import websocket.objects.FundRecord;
@@ -6,7 +6,7 @@ import websocket.objects.TransferRecord;
 
 import java.util.List;
 
-public interface PersistenceLayer {
+public interface Persister {
 
     void createTables();
 

@@ -3,13 +3,13 @@ package websocket.session;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.api.Session;
-import websocket.ApiOutgoing;
-import websocket.EngineIncoming;
+import websocket.application.ApiOutgoing;
+import websocket.application.EngineIncoming;
 import websocket.messages.CreateAccountMsg;
 import websocket.messages.FundAccountMsg;
 import websocket.messages.TransferFundMsg;
-import websocket.server.ISessionListener;
-import websocket.server.ISessionManager;
+import websocket.wsserver.ISessionListener;
+import websocket.wsserver.ISessionManager;
 
 import java.util.concurrent.*;
 
