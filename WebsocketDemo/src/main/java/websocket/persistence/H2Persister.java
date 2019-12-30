@@ -85,9 +85,9 @@ public class H2Persister implements Persister {
 
     @Override
     public void clearData() {
-        String insertStr = "DROP TABLE ACCOUNT;" +
-                "DROP TABLE FUNDRECORD;" +
-                "DROP TABLE TRANSAFERRECORD;";
+        String insertStr = "DROP TABLE IF EXISTS ACCOUNT;" +
+                "DROP TABLE IF EXISTS FUNDRECORD;" +
+                "DROP TABLE IF EXISTS TRANSFERRECORD;";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertStr)) {
             preparedStatement.execute();

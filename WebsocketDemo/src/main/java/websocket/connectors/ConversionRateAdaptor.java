@@ -42,7 +42,7 @@ public class ConversionRateAdaptor {
             e.printStackTrace();
         }
         ApiConfig.setAuthentication(new OAuthAuthentication(consumerKey, is, keyAlias, keyPassword));   // You only need to set this once
-        ApiConfig.setDebug(true);   // Enable http wire logging
+        ApiConfig.setDebug(false);   // Enable http wire logging
         // This is needed to change the environment to run the sample code. For production: use ApiConfig.setSandbox(false);
         ApiConfig.setEnvironment(Environment.parse("sandbox_mtf"));
         allCurrencies = getAllCurrencies();
